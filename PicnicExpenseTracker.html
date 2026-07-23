@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Picnic Expense Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f0f2f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th {
+            background: #4CAF50;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .total-row {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .btn {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+
+            .btn:hover {
+                background: #45a049;
+            }
+
+        .btn-danger {
+            background: #f44336;
+        }
+
+            .btn-danger:hover {
+                background: #da190b;
+            }
+
+        .summary {
+            background: #e7f3fe;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .summary-item {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+            .summary-item strong {
+                display: block;
+                font-size: 20px;
+                color: #2196F3;
+            }
+
+        .balance-positive {
+            color: green;
+            font-weight: bold;
+        }
+
+        .balance-negative {
+            color: red;
+            font-weight: bold;
+        }
+
+        .expense-total {
+            font-weight: bold;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>🎉 Picnic Expense Distribution</h1>
+            <div>
+                <button class="btn" onclick="addFamily()">➕ Add Family</button>
+                <button class="btn btn-danger" onclick="removeLastFamily()">➖ Remove Last</button>
+                <button class="btn" onclick="resetAll()">🔄 Reset</button>
+            </div>
+        </div>
+
+        <div class="summary" id="summarySection">
+            <div class="summary-item">
+                <div>Total Families</div>
+                <strong id="totalFamilies">0</strong>
+            </div>
+            <div class="summary-item">
+                <div>Total Adults</div>
+                <strong id="totalAdults">0</strong>
+            </div>
+            <div class="summary-item">
+                <div>Total Children</div>
+                <strong id="totalChildren">0</strong>
+            </div>
+            <div class="summary-item">
+                <div>Total Units</div>
+                <strong id="totalUnits">0</strong>
+            </div>
+            <div class="summary-item">
+                <div>Cost Per Adult Unit</div>
+                <strong id="costPerUnit">PKR0</strong>
+            </div>
+        </div>
+
+        <div style="margin: 20px 0;">
+            <label><strong>Total Picnic Expense (PKR):</strong></label>
+            <input type="number" id="totalExpense" value="15000" style="width: 200px; padding: 8px; margin-left: 10px;" onchange="updateExpenseGrandTotal()">
+        </div>
+
+        <table id="expenseTable">
+            <thead>
+                <tr>
+                    <th style="width:15%">Family Name</th>
+                    <th style="width:10%">Adults</th>
+                    <th style="width:10%">Children</th>
+                    <th style="width:10%">Total Members</th>
+                    <th style="width:10%">Units</th>
+                    <th style="width:10%">Share %</th>
+                    <th style="width:12%">Amount (PKR)</th>
+                    <th style="width:12%">Amount Paid (PKR)</th>
+                    <th style="width:11%">Balance (PKR)</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td><strong>TOTALS</strong></td>
+                    <td id="totAdults">0</td>
+                    <td id="totChildren">0</td>
+                    <td id="totMembers">0</td>
+                    <td id="totUnits">0.0</td>
+                    <td>100%</td>
+                    <td id="totAmount">0.00</td>
+                    <td id="totPaid">0.00</td>
+                    <td id="totBalance">0.00</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div style="margin-top: 30px;">
+            <h3>📋 Expense Breakdown</h3>
+            <button class="btn" onclick="addExpense()">➕ Add Expense Item</button>
+            <table id="expenseBreakdown">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Category</th>
+                        <th>Quantity</th>
+                        <th>Unit Price (PKR)</th>
+                        <th>Total (PKR)</th>
+                        <th>Paid By</th>
+                    </tr>
+                </thead>
+                <tbody id="expenseBody"></tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td colspan="4"><strong>Total Expenses</strong></td>
+                        <td><strong id="expenseGrandTotal">0</strong></td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let familyCounter = 0;
+
+        // Initialize with 3 families
+        window.onload = function() {
+            // Add default families
+            addFamily('Family 1', 2, 1);
+            addFamily('Family 2', 3, 2);
+            addFamily('Family 3', 1, 1);
+
+            // Add default expenses
+            addExpense('Food', 'Catering', 1, 8000, 'Family 1');
+            addExpense('Transport', 'Travel', 2, 2000, 'Family 2');
+            addExpense('Drinks', 'Beverages', 3, 1000, 'Family 3');
+
+            calculateAll();
+        };
+
+        function addFamily(name = '', adults = 1, children = 0) {
+            familyCounter++;
+            const tbody = document.getElementById('tableBody');
+            const row = document.createElement('tr');
+            const familyName = name || `Family ${familyCounter}`;
+            const rowId = `family-${Date.now()}-${Math.random()}`;
+            row.id = rowId;
+
+            row.innerHTML = `
+    <td><input type="text" value="${familyName}" style="width:100%" onchange="calculateAll()"></td>
+    <td><input type="number" value="${adults}" min="0" style="width:100%" onchange="calculateAll()" class="adults-input"></td>
+    <td><input type="number" value="${children}" min="0" style="width:100%" onchange="calculateAll()" class="children-input"></td>
+    <td class="total-members">${adults + children}</td>
+    <td class="units">${(adults + (children * 0.5)).toFixed(1)}</td>
+    <td class="share-percent">0%</td>
+    <td class="amount">0.00</td>
+    <td><input type="number" value="0" min="0" style="width:100%" onchange="calculateAll()" class="paid-input"></td>
+    <td class="balance">0.00</td>
+  `;
+
+            tbody.appendChild(row);
+            calculateAll();
+        }
+
+            function removeLastFamily() {
+                const tbody = document.getElementById('tableBody');
+                if (tbody.children.length > 1) {
+                    tbody.removeChild(tbody.lastChild);
+                    calculateAll();
+                }
+            }
+
+            function resetAll() {
+                const tbody = document.getElementById('tableBody');
+                tbody.innerHTML = '';
+                const expenseBody = document.getElementById('expenseBody');
+                expenseBody.innerHTML = '';
+                familyCounter = 0;
+
+                addFamily('Family 1', 2, 1);
+                addFamily('Family 2', 3, 2);
+                addFamily('Family 3', 1, 1);
+
+                addExpense('Food', 'Catering', 1, 8000, 'Family 1');
+                addExpense('Transport', 'Travel', 2, 2000, 'Family 2');
+                addExpense('Drinks', 'Beverages', 3, 1000, 'Family 3');
+
+                document.getElementById('totalExpense').value = 15000;
+                calculateAll();
+            }
+
+            function calculateAll() {
+                const rows = document.querySelectorAll('#tableBody tr');
+                const totalExpense = parseFloat(document.getElementById('totalExpense').value) || 0;
+
+                let totalAdults = 0, totalChildren = 0, totalUnits = 0, totalAmount = 0, totalPaid = 0;
+
+                // First pass - calculate totals
+                rows.forEach(row => {
+                    const adultsInput = row.querySelector('.adults-input');
+                    const childrenInput = row.querySelector('.children-input');
+
+                    if (!adultsInput || !childrenInput) return;
+
+                    const adults = parseFloat(adultsInput.value) || 0;
+                    const children = parseFloat(childrenInput.value) || 0;
+
+                    totalAdults += adults;
+                    totalChildren += children;
+                    totalUnits += adults + (children * 0.5);
+                });
+
+                // Second pass - calculate shares
+                rows.forEach(row => {
+                    const adultsInput = row.querySelector('.adults-input');
+                    const childrenInput = row.querySelector('.children-input');
+                    const paidInput = row.querySelector('.paid-input');
+
+                    if (!adultsInput || !childrenInput || !paidInput) return;
+
+                    const adults = parseFloat(adultsInput.value) || 0;
+                    const children = parseFloat(childrenInput.value) || 0;
+                    const paid = parseFloat(paidInput.value) || 0;
+                    const units = adults + (children * 0.5);
+
+                    const members = adults + children;
+                    const sharePercent = totalUnits > 0 ? (units / totalUnits) * 100 : 0;
+                    const amount = totalUnits > 0 ? (units / totalUnits) * totalExpense : 0;
+                    const balance = paid - amount;
+
+                    const membersCell = row.querySelector('.total-members');
+                    const unitsCell = row.querySelector('.units');
+                    const shareCell = row.querySelector('.share-percent');
+                    const amountCell = row.querySelector('.amount');
+                    const balanceCell = row.querySelector('.balance');
+
+                    if (membersCell) membersCell.textContent = members;
+                    if (unitsCell) unitsCell.textContent = units.toFixed(1);
+                    if (shareCell) shareCell.textContent = sharePercent.toFixed(1) + '%';
+                    if (amountCell) amountCell.textContent = amount.toFixed(2);
+                    if (balanceCell) {
+                        balanceCell.textContent = balance.toFixed(2);
+                        balanceCell.className = 'balance' + (balance >= 0 ? ' balance-positive' : ' balance-negative');
+                    }
+
+                    totalAmount += amount;
+                    totalPaid += paid;
+                });
+
+                // Update totals
+                document.getElementById('totAdults').textContent = totalAdults;
+                document.getElementById('totChildren').textContent = totalChildren;
+                document.getElementById('totMembers').textContent = totalAdults + totalChildren;
+                document.getElementById('totUnits').textContent = totalUnits.toFixed(1);
+                document.getElementById('totAmount').textContent = totalAmount.toFixed(2);
+                document.getElementById('totPaid').textContent = totalPaid.toFixed(2);
+                document.getElementById('totBalance').textContent = (totalPaid - totalAmount).toFixed(2);
+
+                // Update summary
+                document.getElementById('totalFamilies').textContent = rows.length;
+                document.getElementById('totalAdults').textContent = totalAdults;
+                document.getElementById('totalChildren').textContent = totalChildren;
+                document.getElementById('totalUnits').textContent = totalUnits.toFixed(1);
+                document.getElementById('costPerUnit').textContent = 'PKR' + (totalUnits > 0 ? (totalExpense / totalUnits).toFixed(2) : '0.00');
+            }
+
+            function updateExpenseTotal(element) {
+                const row = element.closest('tr');
+                if (!row) return;
+
+                const inputs = row.querySelectorAll('input[type="number"]');
+                if (inputs.length < 2) return;
+
+                const qty = parseFloat(inputs[0].value) || 0;
+                const price = parseFloat(inputs[1].value) || 0;
+                const total = qty * price;
+
+                const totalSpan = row.querySelector('.expense-total');
+                if (totalSpan) totalSpan.textContent = total.toFixed(2);
+
+                updateExpenseGrandTotal();
+            }
+
+            function updateExpenseGrandTotal() {
+                const totals = document.querySelectorAll('.expense-total');
+                let grandTotal = 0;
+                totals.forEach(el => {
+                    grandTotal += parseFloat(el.textContent) || 0;
+                });
+
+                document.getElementById('expenseGrandTotal').textContent = grandTotal.toFixed(2);
+                document.getElementById('totalExpense').value = grandTotal.toFixed(2);
+                calculateAll();
+            }
+
+            function addExpense(item = '', category = '', qty = 1, price = 0, paidBy = '') {
+                const tbody = document.getElementById('expenseBody');
+                const row = document.createElement('tr');
+
+                row.innerHTML = `
+    <td><input type="text" value="${item || 'New Item'}" style="width:100%"></td>
+    <td><input type="text" value="${category || 'Misc'}" style="width:100%"></td>
+    <td><input type="number" value="${qty}" min="0" style="width:100%" onchange="updateExpenseTotal(this)"></td>
+    <td><input type="number" value="${price}" min="0" style="width:100%" onchange="updateExpenseTotal(this)"></td>
+    <td><span class="expense-total">${(qty * price).toFixed(2)}</span></td>
+    <td><input type="text" value="${paidBy}" style="width:100%"></td>
+  `;
+
+                tbody.appendChild(row);
+                updateExpenseGrandTotal();
+            }
+
+                // Fix: When total expense input changes manually, update everything
+                document.addEventListener('DOMContentLoaded', function() {
+                    const totalExpenseInput = document.getElementById('totalExpense');
+                    if (totalExpenseInput) {
+                        totalExpenseInput.addEventListener('change', function() {
+                            calculateAll();
+                        });
+                    }
+                });
+    </script>
+
+</body>
+</html>
