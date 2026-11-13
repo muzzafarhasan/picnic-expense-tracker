@@ -1,6 +1,6 @@
 {
   "name": "Joint Family Picnic Expense Calculator",
-  "short_name": "Picnic Calc",
+  "short_name": "Picnic Expense Calc",
   "description": "Log picnic costs, split them fairly, and see exactly who owes whom.",
   "id": "/",
   "start_url": "./",
