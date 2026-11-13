@@ -1,417 +1,650 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Picnic Expense Calculator</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background: #f0f2f5;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-
-        th {
-            background: #4CAF50;
-            color: white;
-            padding: 12px;
-            text-align: left;
-        }
-
-        td {
-            padding: 10px;
-            border: 1px solid #ddd;
-        }
-
-        input[type="number"], input[type="text"] {
-            width: 100%;
-            padding: 6px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-
-        .total-row {
-            background: #f8f9fa;
-            font-weight: bold;
-        }
-
-        .btn {
-            background: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 10px 5px;
-        }
-
-            .btn:hover {
-                background: #45a049;
-            }
-
-        .btn-danger {
-            background: #f44336;
-        }
-
-            .btn-danger:hover {
-                background: #da190b;
-            }
-
-        .summary {
-            background: #e7f3fe;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 20px 0;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-        }
-
-        .summary-item {
-            background: white;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-        }
-
-            .summary-item strong {
-                display: block;
-                font-size: 20px;
-                color: #2196F3;
-            }
-
-        .balance-positive {
-            color: green;
-            font-weight: bold;
-        }
-
-        .balance-negative {
-            color: red;
-            font-weight: bold;
-        }
-
-        .expense-total {
-            font-weight: bold;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0f766e">
+<meta name="description" content="Log picnic costs, split them fairly, and see exactly who owes whom.">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Picnic Calc">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Joint Family Picnic Expense Calculator</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f5f6f8; --card: #ffffff; --ink: #1d2330; --muted: #5d6677;
+    --line: #d9dde5; --accent: #0f766e; --accent-ink: #ffffff; --accent-soft: #e0f2f0;
+    --bad: #b42318; --bad-bg: #fdecea; --good: #067647; --good-bg: #e7f6ee;
+    --warn-bg: #fff4d6; --warn: #8a5a00; --bar: #0f766e; --shadow: 0 1px 2px rgba(16,24,40,.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12161d; --card: #1b212b; --ink: #e8ebf1; --muted: #a2abbb;
+      --line: #333c4b; --accent: #2dd4bf; --accent-ink: #06201d; --accent-soft: #17332f;
+      --bad: #ff8a80; --bad-bg: #3a1c1a; --good: #5fd49a; --good-bg: #153326;
+      --warn-bg: #3a2e10; --warn: #f6c453; --bar: #2dd4bf; --shadow: none;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; }
+  h2 { font-size: 1.15rem; margin: 0; }
+  h3 { font-size: 1rem; margin: 20px 0 8px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow); }
+  .sec-head { display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    flex-wrap: wrap; margin-bottom: 12px; }
+  .grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .fld { display: flex; flex-direction: column; gap: 3px; font-size: .8rem; color: var(--muted); font-weight: 600; }
+  input, select, button, textarea { font: inherit; color: var(--ink); }
+  input, select { width: 100%; padding: 8px 10px; background: var(--card);
+    border: 1px solid var(--line); border-radius: 8px; min-height: 38px; }
+  input.bad { border-color: var(--bad); background: var(--bad-bg); }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; }
+  button { cursor: pointer; border: 1px solid var(--line); background: var(--card);
+    padding: 8px 14px; border-radius: 8px; min-height: 38px; font-weight: 600; }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  button.danger { color: var(--bad); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  .row { border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin-bottom: 10px; background: var(--bg); }
+  .row-grid { display: grid; gap: 10px; align-items: end; }
+  .fam-grid { grid-template-columns: 1.4fr .7fr .7fr .9fr 1.6fr auto; }
+  .exp-grid { grid-template-columns: 1.2fr 1.4fr .9fr 1.2fr 1.2fr auto; }
+  @media (max-width: 860px) {
+    .fam-grid, .exp-grid { grid-template-columns: repeat(2, 1fr); }
+    .fam-grid .wide, .exp-grid .wide { grid-column: 1 / -1; }
+  }
+  .custom-panel { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); }
+  .hint { font-size: .85rem; margin-top: 6px; color: var(--muted); }
+  .hint.err { color: var(--bad); font-weight: 600; }
+  .hint.ok { color: var(--good); }
+  .cards { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+  .stat { background: var(--accent-soft); border-radius: 10px; padding: 12px 14px; }
+  .stat .lbl { font-size: .78rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+  .stat .val { font-size: 1.45rem; font-weight: 700; margin-top: 2px; }
+  .stat .sub { font-size: .78rem; color: var(--muted); }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; min-width: 640px; }
+  th, td { text-align: right; padding: 9px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; white-space: normal; }
+  th { font-size: .78rem; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
+  tfoot td { font-weight: 700; border-top: 2px solid var(--line); border-bottom: 0; }
+  .pos { color: var(--good); font-weight: 700; } .neg { color: var(--bad); font-weight: 700; } .zero { color: var(--muted); }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: .75rem; font-weight: 700; }
+  .pill.pos { background: var(--good-bg); } .pill.neg { background: var(--bad-bg); }
+  ul.plain { list-style: none; padding: 0; margin: 0; }
+  ul.plain li { padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 6px; background: var(--bg); }
+  .banner { padding: 10px 12px; border-radius: 8px; margin-top: 12px; font-weight: 600; }
+  .banner.ok { background: var(--good-bg); color: var(--good); }
+  .banner.err { background: var(--bad-bg); color: var(--bad); }
+  .banner.warn { background: var(--warn-bg); color: var(--warn); }
+  .bars .bar-row { display: grid; grid-template-columns: 150px 1fr 120px; gap: 10px; align-items: center; margin-bottom: 6px; font-size: .9rem; }
+  .bar-track { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; height: 16px; overflow: hidden; }
+  .bar-fill { background: var(--bar); height: 100%; border-radius: 5px; }
+  .bar-val { text-align: right; }
+  @media (max-width: 560px) { .bars .bar-row { grid-template-columns: 1fr 1fr; } .bar-track { grid-column: 1 / -1; order: 3; } }
+  .empty { padding: 18px; text-align: center; color: var(--muted); border: 1px dashed var(--line); border-radius: 10px; }
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
+  .help ol { padding-left: 20px; margin: 6px 0 0; } .help li { margin-bottom: 4px; }
+  .toast { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); background: var(--ink);
+    color: var(--bg); padding: 8px 16px; border-radius: 8px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+  .sr { position: absolute; left: -9999px; }
+  @media print {
+    body { background: #fff; color: #000; }
+    .no-print { display: none !important; }
+    .card { box-shadow: none; break-inside: avoid; }
+    input, select { border: 0; background: transparent; appearance: none; padding: 0; }
+  }
+</style>
+<base target="_blank">
 </head>
 <body>
+<div class="wrap">
 
-    <div class="container">
-        <div class="header">
-            <h1>🎉 Picnic Expense Distribution</h1>
-            <div>
-                <button class="btn" onclick="addFamily()">➕ Add Family</button>
-                <button class="btn btn-danger" onclick="removeLastFamily()">➖ Remove Last</button>
-                <button class="btn" onclick="resetAll()">🔄 Reset</button>
-            </div>
-        </div>
-
-        <div class="summary" id="summarySection">
-            <div class="summary-item">
-                <div>Total Families</div>
-                <strong id="totalFamilies">0</strong>
-            </div>
-            <div class="summary-item">
-                <div>Total Adults</div>
-                <strong id="totalAdults">0</strong>
-            </div>
-            <div class="summary-item">
-                <div>Total Children</div>
-                <strong id="totalChildren">0</strong>
-            </div>
-            <div class="summary-item">
-                <div>Total Units</div>
-                <strong id="totalUnits">0</strong>
-            </div>
-            <div class="summary-item">
-                <div>Cost Per Adult Unit</div>
-                <strong id="costPerUnit">PKR0</strong>
-            </div>
-        </div>
-
-        <div style="margin: 20px 0;">
-            <label><strong>Total Picnic Expense (PKR):</strong></label>
-            <input type="number" id="totalExpense" value="15000" style="width: 200px; padding: 8px; margin-left: 10px;" onchange="updateExpenseGrandTotal()">
-        </div>
-
-        <table id="expenseTable">
-            <thead>
-                <tr>
-                    <th style="width:15%">Family Name</th>
-                    <th style="width:10%">Adults</th>
-                    <th style="width:10%">Children</th>
-                    <th style="width:10%">Total Members</th>
-                    <th style="width:10%">Units</th>
-                    <th style="width:10%">Share %</th>
-                    <th style="width:12%">Amount (PKR)</th>
-                    <th style="width:12%">Amount Paid (PKR)</th>
-                    <th style="width:11%">Balance (PKR)</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-            <tfoot>
-                <tr class="total-row">
-                    <td><strong>TOTALS</strong></td>
-                    <td id="totAdults">0</td>
-                    <td id="totChildren">0</td>
-                    <td id="totMembers">0</td>
-                    <td id="totUnits">0.0</td>
-                    <td>100%</td>
-                    <td id="totAmount">0.00</td>
-                    <td id="totPaid">0.00</td>
-                    <td id="totBalance">0.00</td>
-                </tr>
-            </tfoot>
-        </table>
-
-        <div style="margin-top: 30px;">
-            <h3>📋 Expense Breakdown</h3>
-            <button class="btn" onclick="addExpense()">➕ Add Expense Item</button>
-            <table id="expenseBreakdown">
-                <thead>
-                    <tr>
-                        <th>Item</th>
-                        <th>Category</th>
-                        <th>Quantity</th>
-                        <th>Unit Price (PKR)</th>
-                        <th>Total (PKR)</th>
-                        <th>Paid By</th>
-                    </tr>
-                </thead>
-                <tbody id="expenseBody"></tbody>
-                <tfoot>
-                    <tr class="total-row">
-                        <td colspan="4"><strong>Total Expenses</strong></td>
-                        <td><strong id="expenseGrandTotal">0</strong></td>
-                        <td></td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
+  <!-- HEADER -->
+  <header class="card">
+    <h1>🧺 Joint Family Picnic Expense Calculator</h1>
+    <p class="hint" style="margin:0 0 12px">Log costs, split them fairly, and see exactly who owes whom.</p>
+    <div class="grid">
+      <label class="fld">Picnic name <input id="picnicName" type="text" autocomplete="off"></label>
+      <label class="fld">Date <input id="picnicDate" type="date"></label>
+      <label class="fld">Currency <select id="currency"></select></label>
     </div>
+    <div class="toolbar no-print" style="margin-top:14px">
+      <button id="btnSample">Add sample data</button>
+      <button id="btnReset" class="danger">Reset</button>
+      <button id="btnCopy">Copy summary</button>
+      <button id="btnCsv">Download CSV</button>
+      <button id="btnPrint">Print</button>
+      <button id="btnInstall" hidden>Install app</button>
+    </div>
+  </header>
 
-    <script>
-        let familyCounter = 0;
+  <!-- SECTION 1: FAMILIES -->
+  <section class="card" aria-labelledby="famH">
+    <div class="sec-head">
+      <h2 id="famH">1 · Families</h2>
+      <button id="addFam" class="primary no-print">+ Add family</button>
+    </div>
+    <div id="families"></div>
+    <p class="hint">“Child counts as” is the fraction of an adult a child is charged for in per-person splits (1 = full, 0.5 = half, 0 = free).</p>
+  </section>
 
-        // Initialize with 3 families
-        window.onload = function() {
-            // Add default families
-            addFamily('Family 1', 2, 1);
-            addFamily('Family 2', 3, 2);
-            addFamily('Family 3', 1, 1);
+  <!-- SECTION 2: EXPENSES -->
+  <section class="card" aria-labelledby="expH">
+    <div class="sec-head">
+      <h2 id="expH">2 · Expenses</h2>
+      <button id="addExp" class="primary no-print">+ Add expense</button>
+    </div>
+    <div id="expenses"></div>
+  </section>
 
-            // Add default expenses
-            addExpense('Food', 'Catering', 1, 8000, 'Family 1');
-            addExpense('Transport', 'Travel', 2, 2000, 'Family 2');
-            addExpense('Drinks', 'Beverages', 3, 1000, 'Family 3');
+  <!-- SECTION 3: RESULTS -->
+  <section class="card" aria-labelledby="resH">
+    <div class="sec-head"><h2 id="resH">3 · Results</h2></div>
+    <div id="results"></div>
+  </section>
 
-            calculateAll();
-        };
+  <!-- HOW TO USE -->
+  <section class="card help">
+    <h2>How to use</h2>
+    <ol>
+      <li>Enter each family’s adults, children and the fraction a child counts as.</li>
+      <li>Add every expense, who paid (a family or the Club/Common fund) and how to split it:
+        <strong>Per Person</strong> (by headcount), <strong>Equal Per Family</strong>, or <strong>Custom</strong> (type each family’s amount).</li>
+      <li>Results update instantly. “Owes” families should pay “Is owed” families following the settlement plan.</li>
+      <li>Amounts that are blank, negative or not numbers count as 0 and are highlighted red. Your data is saved in this browser automatically.</li>
+    </ol>
+  </section>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-        function addFamily(name = '', adults = 1, children = 0) {
-            familyCounter++;
-            const tbody = document.getElementById('tableBody');
-            const row = document.createElement('tr');
-            const familyName = name || `Family ${familyCounter}`;
-            const rowId = `family-${Date.now()}-${Math.random()}`;
-            row.id = rowId;
+<script>
+"use strict";
+/* ============================== HELPERS ============================== */
+const $ = s => document.querySelector(s);
+const STORE_KEY = "picnicCalc.v1";
+const CATEGORIES = ["Food","Drinks","Water","Transportation","Picnic Rental/Venue","Equipment","Activities","Misc","Other"];
+const CURRENCIES = [["PKR","PKR ₨"],["INR","INR ₹"],["USD","USD $"],["EUR","EUR €"],["GBP","GBP £"],["AED","AED د.إ"],["SAR","SAR ﷼"],["CAD","CAD $"],["AUD","AUD $"]];
+const METHODS = [["person","Per Person (headcount)"],["family","Equal Per Family"],["custom","Custom per family"]];
 
-            row.innerHTML = `
-    <td><input type="text" value="${familyName}" style="width:100%" onchange="calculateAll()"></td>
-    <td><input type="number" value="${adults}" min="0" style="width:100%" onchange="calculateAll()" class="adults-input"></td>
-    <td><input type="number" value="${children}" min="0" style="width:100%" onchange="calculateAll()" class="children-input"></td>
-    <td class="total-members">${adults + children}</td>
-    <td class="units">${(adults + (children * 0.5)).toFixed(1)}</td>
-    <td class="share-percent">0%</td>
-    <td class="amount">0.00</td>
-    <td><input type="number" value="0" min="0" style="width:100%" onchange="calculateAll()" class="paid-input"></td>
-    <td class="balance">0.00</td>
-  `;
+let uidN = 0;
+const uid = () => "i" + Date.now().toString(36) + (uidN++).toString(36) + Math.random().toString(36).slice(2,5);
 
-            tbody.appendChild(row);
-            calculateAll();
-        }
+/* Tiny DOM builder. Uses textContent only, so user text can never inject HTML. */
+function h(tag, props = {}, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (v == null || v === false) continue;
+    if (k === "class") e.className = v;
+    else if (k === "text") e.textContent = v;
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else if (v === true) e.setAttribute(k, "");
+    else e.setAttribute(k, v);
+  }
+  for (const c of kids.flat()) { if (c == null) continue; e.append(c.nodeType ? c : document.createTextNode(c)); }
+  return e;
+}
 
-            function removeLastFamily() {
-                const tbody = document.getElementById('tableBody');
-                if (tbody.children.length > 1) {
-                    tbody.removeChild(tbody.lastChild);
-                    calculateAll();
-                }
-            }
+/* Parse user input. Blank / negative / non-numeric => 0 and flagged "bad".
+   blankOk lets optional fields (custom amounts) be empty without a flag. */
+function num(v, blankOk = false) {
+  const s = (v == null ? "" : String(v)).trim().replace(/,/g, "");
+  if (s === "") return { v: 0, bad: !blankOk };
+  const n = Number(s);
+  if (!isFinite(n) || n < 0) return { v: 0, bad: true };
+  return { v: n, bad: false };
+}
+const setBad = (el, bad) => el.classList.toggle("bad", bad);
+const toCents = x => Math.round(x * 100);
 
-            function resetAll() {
-                const tbody = document.getElementById('tableBody');
-                tbody.innerHTML = '';
-                const expenseBody = document.getElementById('expenseBody');
-                expenseBody.innerHTML = '';
-                familyCounter = 0;
+let fmtCache = null, fmtCur = null;
+function money(cents) {
+  const cur = state.currency;
+  if (fmtCur !== cur) {
+    fmtCache = new Intl.NumberFormat("en-US", { style: "currency", currency: cur, minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    fmtCur = cur;
+  }
+  return fmtCache.format(cents / 100);
+}
+const fmtNum = (x, d = 2) => (Math.round(x * 10 ** d) / 10 ** d).toLocaleString("en-US", { maximumFractionDigits: d });
 
-                addFamily('Family 1', 2, 1);
-                addFamily('Family 2', 3, 2);
-                addFamily('Family 3', 1, 1);
+function toast(msg) {
+  const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 2200);
+}
 
-                addExpense('Food', 'Catering', 1, 8000, 'Family 1');
-                addExpense('Transport', 'Travel', 2, 2000, 'Family 2');
-                addExpense('Drinks', 'Beverages', 3, 1000, 'Family 3');
+/* ============================== STATE ============================== */
+const today = () => { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
 
-                document.getElementById('totalExpense').value = 15000;
-                calculateAll();
-            }
+function blankState() {
+  return { name: "Our Family Picnic", date: today(), currency: "PKR",
+    families: [newFamily()], expenses: [] };
+}
+function newFamily(name = "", adults = "2", children = "0", factor = "1", notes = "") {
+  return { id: uid(), name, adults, children, factor, notes };
+}
+function newExpense(o = {}) {
+  return Object.assign({ id: uid(), category: "Food", desc: "", amount: "", paidBy: "common", method: "person", custom: {} }, o);
+}
+function sampleState() {
+  const k = newFamily("Khan family", "2", "3", "0.5", "Bringing the grill");
+  const a = newFamily("Ahmed family", "2", "2", "0.5");
+  const s = newFamily("Siddiqui family", "3", "1", "0.5", "Grandparents joining");
+  return { name: "Hunza Valley Day Trip", date: today(), currency: "PKR", families: [k, a, s],
+    expenses: [
+      newExpense({ category: "Food", desc: "BBQ & lunch", amount: "18500", paidBy: k.id, method: "person" }),
+      newExpense({ category: "Drinks", desc: "Soft drinks & tea", amount: "4200", paidBy: a.id, method: "person" }),
+      newExpense({ category: "Water", desc: "Mineral water cases", amount: "1800", paidBy: s.id, method: "person" }),
+      newExpense({ category: "Transportation", desc: "Coaster rental + fuel", amount: "12000", paidBy: k.id, method: "family" }),
+      newExpense({ category: "Picnic Rental/Venue", desc: "Park pavilion booking", amount: "9000", paidBy: "common", method: "family" }),
+      newExpense({ category: "Misc", desc: "Ice, charcoal, bags", amount: "2500", paidBy: s.id, method: "custom",
+        custom: { [k.id]: "1000", [a.id]: "1000", [s.id]: "500" } })
+    ] };
+}
 
-            function calculateAll() {
-                const rows = document.querySelectorAll('#tableBody tr');
-                const totalExpense = parseFloat(document.getElementById('totalExpense').value) || 0;
+let state = load() || sampleState();   // preload realistic sample data on first visit
 
-                let totalAdults = 0, totalChildren = 0, totalUnits = 0, totalAmount = 0, totalPaid = 0;
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem(STORE_KEY));
+    if (s && Array.isArray(s.families) && Array.isArray(s.expenses)) return s;
+  } catch (e) { /* storage unavailable or corrupt: ignore */ }
+  return null;
+}
+function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {} }
 
-                // First pass - calculate totals
-                rows.forEach(row => {
-                    const adultsInput = row.querySelector('.adults-input');
-                    const childrenInput = row.querySelector('.children-input');
+/* ============================== CALCULATION ============================== */
+/* All money math is done in integer cents so totals reconcile exactly. */
+function compute() {
+  const n = state.families.length;
+  if (!n) return { n: 0 };
 
-                    if (!adultsInput || !childrenInput) return;
+  const fams = state.families.map(f => {
+    const adults = num(f.adults).v, children = num(f.children).v, factor = num(f.factor).v;
+    return { id: f.id, name: f.name.trim() || "Unnamed family", adults, children,
+      head: adults + children * factor };            // adult-equivalent headcount
+  });
+  const totalHead = fams.reduce((s, f) => s + f.head, 0);
+  const people = fams.reduce((s, f) => s + f.adults + f.children, 0);
 
-                    const adults = parseFloat(adultsInput.value) || 0;
-                    const children = parseFloat(childrenInput.value) || 0;
+  let totalC = 0, ppC = 0, eqC = 0, customSumC = 0, clubPaidC = 0;
+  const customC = {}, paidC = {}, byCat = {}, customInfo = {};
+  fams.forEach(f => { customC[f.id] = 0; paidC[f.id] = 0; });
 
-                    totalAdults += adults;
-                    totalChildren += children;
-                    totalUnits += adults + (children * 0.5);
-                });
+  state.expenses.forEach(e => {
+    const a = toCents(num(e.amount).v);
+    totalC += a;
+    byCat[e.category] = (byCat[e.category] || 0) + a;
+    if (e.paidBy in paidC) paidC[e.paidBy] += a; else clubPaidC += a;   // unknown payer => common fund
+    if (e.method === "person") ppC += a;
+    else if (e.method === "family") eqC += a;
+    else {
+      let s = 0;
+      fams.forEach(f => { const c = toCents(num((e.custom || {})[f.id], true).v); customC[f.id] += c; s += c; });
+      customSumC += s;
+      customInfo[e.id] = { assigned: s, amount: a };
+    }
+  });
 
-                // Second pass - calculate shares
-                rows.forEach(row => {
-                    const adultsInput = row.querySelector('.adults-input');
-                    const childrenInput = row.querySelector('.children-input');
-                    const paidInput = row.querySelector('.paid-input');
+  /* Family share = per-person rate × headcount + equal share + custom amounts.
+     If nobody has any headcount, per-person items fall back to an equal split. */
+  const noHead = totalHead <= 0;
+  const ppRate = noHead ? 0 : ppC / totalHead;               // cents per adult-equivalent
+  const rows = fams.map(f => {
+    const raw = (noHead ? ppC / n : ppRate * f.head) + eqC / n + customC[f.id];
+    return { id: f.id, name: f.name, head: f.head, shareC: Math.round(raw), paidC: paidC[f.id] };
+  });
 
-                    if (!adultsInput || !childrenInput || !paidInput) return;
+  /* Rounding fix: individual rounding can leave the shares a cent or two off the amount
+     actually assigned. Push that remainder onto the family with the largest headcount. */
+  const assignedC = ppC + eqC + customSumC;
+  const diff = assignedC - rows.reduce((s, r) => s + r.shareC, 0);
+  if (diff !== 0) {
+    let big = rows[0];
+    rows.forEach(r => { if (r.head > big.head) big = r; });
+    big.shareC += diff;
+  }
+  rows.forEach(r => { r.balC = r.paidC - r.shareC; r.pct = totalC > 0 ? r.shareC / totalC * 100 : 0; });
+  const club = { paidC: clubPaidC, balC: clubPaidC };        // the fund is owed what it paid out
 
-                    const adults = parseFloat(adultsInput.value) || 0;
-                    const children = parseFloat(childrenInput.value) || 0;
-                    const paid = parseFloat(paidInput.value) || 0;
-                    const units = adults + (children * 0.5);
+  const sumShares = rows.reduce((s, r) => s + r.shareC, 0);
+  const sumBal = rows.reduce((s, r) => s + r.balC, 0) + club.balC;
 
-                    const members = adults + children;
-                    const sharePercent = totalUnits > 0 ? (units / totalUnits) * 100 : 0;
-                    const amount = totalUnits > 0 ? (units / totalUnits) * totalExpense : 0;
-                    const balance = paid - amount;
+  /* Settlement: greedy matching of the biggest debtor with the biggest creditor.
+     Each transfer fully settles at least one party, so transfers <= parties - 1. */
+  const parties = rows.map(r => ({ name: r.name, bal: r.balC }));
+  if (club.paidC > 0) parties.push({ name: "Club / Common fund", bal: club.balC });
+  const cred = parties.filter(p => p.bal > 0).map(p => ({ ...p })).sort((a, b) => b.bal - a.bal);
+  const debt = parties.filter(p => p.bal < 0).map(p => ({ name: p.name, bal: -p.bal })).sort((a, b) => b.bal - a.bal);
+  const transfers = [];
+  let i = 0, j = 0;
+  while (i < debt.length && j < cred.length) {
+    const amt = Math.min(debt[i].bal, cred[j].bal);
+    if (amt > 0) transfers.push({ from: debt[i].name, to: cred[j].name, amt });
+    debt[i].bal -= amt; cred[j].bal -= amt;
+    if (debt[i].bal === 0) i++;
+    if (cred[j].bal === 0) j++;
+  }
 
-                    const membersCell = row.querySelector('.total-members');
-                    const unitsCell = row.querySelector('.units');
-                    const shareCell = row.querySelector('.share-percent');
-                    const amountCell = row.querySelector('.amount');
-                    const balanceCell = row.querySelector('.balance');
+  return { n, rows, club, totalC, totalHead, people, ppRate, ppC, eqC, noHead,
+    perAdultEq: totalHead > 0 ? totalC / totalHead : 0,
+    perPerson: people > 0 ? totalC / people : 0,
+    sumShares, sumBal, transfers, byCat, customInfo,
+    integrityOK: sumShares === totalC && sumBal === 0 };
+}
 
-                    if (membersCell) membersCell.textContent = members;
-                    if (unitsCell) unitsCell.textContent = units.toFixed(1);
-                    if (shareCell) shareCell.textContent = sharePercent.toFixed(1) + '%';
-                    if (amountCell) amountCell.textContent = amount.toFixed(2);
-                    if (balanceCell) {
-                        balanceCell.textContent = balance.toFixed(2);
-                        balanceCell.className = 'balance' + (balance >= 0 ? ' balance-positive' : ' balance-negative');
-                    }
+/* ============================== RENDER: FAMILIES ============================== */
+function bind(el, obj, key, isNum, blankOk) {
+  if (isNum) setBad(el, num(obj[key], blankOk).bad);
+  el.addEventListener("input", () => {
+    obj[key] = el.value;
+    if (isNum) setBad(el, num(el.value, blankOk).bad);
+    if (key === "name") refreshFamilyRefs();
+    update();
+  });
+}
+const field = (label, input, cls = "") => h("label", { class: "fld " + cls }, h("span", { text: label }), input);
 
-                    totalAmount += amount;
-                    totalPaid += paid;
-                });
+function famCard(f) {
+  const name = h("input", { type: "text", value: f.name, placeholder: "e.g. Khan family", autocomplete: "off" });
+  const ad = h("input", { type: "number", min: "0", step: "1", inputmode: "numeric", value: f.adults });
+  const ch = h("input", { type: "number", min: "0", step: "1", inputmode: "numeric", value: f.children });
+  const fc = h("input", { type: "number", min: "0", step: "0.05", inputmode: "decimal", value: f.factor });
+  const nt = h("input", { type: "text", value: f.notes, placeholder: "Optional notes", autocomplete: "off" });
+  name.value = f.name; ad.value = f.adults; ch.value = f.children; fc.value = f.factor; nt.value = f.notes;
+  bind(name, f, "name"); bind(ad, f, "adults", true); bind(ch, f, "children", true);
+  bind(fc, f, "factor", true); bind(nt, f, "notes");
+  const rm = h("button", { class: "danger no-print", type: "button", "aria-label": "Remove family", text: "Remove",
+    onclick: () => removeFamily(f.id) });
+  rm.dataset.rmfam = "1";
+  return h("div", { class: "row", "data-id": f.id },
+    h("div", { class: "row-grid fam-grid" },
+      field("Family name", name, "wide"), field("Adults", ad), field("Children", ch),
+      field("Child counts as", fc), field("Notes", nt, "wide"), rm));
+}
+function renderFamilies() {
+  const box = $("#families"); box.replaceChildren();
+  state.families.forEach(f => box.append(famCard(f)));
+  syncRemoveButtons();
+}
+function syncRemoveButtons() {   // minimum one family
+  const only = state.families.length <= 1;
+  document.querySelectorAll("[data-rmfam]").forEach(b => b.disabled = only);
+}
+function addFamily() {
+  const f = newFamily("", "2", "0", "1");
+  state.families.push(f);
+  $("#families").append(famCard(f));
+  syncRemoveButtons(); refreshFamilyRefs(); update();
+  $("#families").lastElementChild.querySelector("input").focus();
+}
+function removeFamily(id) {
+  if (state.families.length <= 1) return;
+  state.families = state.families.filter(f => f.id !== id);
+  state.expenses.forEach(e => { if (e.paidBy === id) e.paidBy = "common"; if (e.custom) delete e.custom[id]; });
+  renderFamilies(); refreshFamilyRefs(); update();
+}
 
-                // Update totals
-                document.getElementById('totAdults').textContent = totalAdults;
-                document.getElementById('totChildren').textContent = totalChildren;
-                document.getElementById('totMembers').textContent = totalAdults + totalChildren;
-                document.getElementById('totUnits').textContent = totalUnits.toFixed(1);
-                document.getElementById('totAmount').textContent = totalAmount.toFixed(2);
-                document.getElementById('totPaid').textContent = totalPaid.toFixed(2);
-                document.getElementById('totBalance').textContent = (totalPaid - totalAmount).toFixed(2);
+/* ============================== RENDER: EXPENSES ============================== */
+const expRefs = new Map();   // expense id -> {paidSel, panel, hint}
+const famLabel = f => f.name.trim() || "Unnamed family";
 
-                // Update summary
-                document.getElementById('totalFamilies').textContent = rows.length;
-                document.getElementById('totalAdults').textContent = totalAdults;
-                document.getElementById('totalChildren').textContent = totalChildren;
-                document.getElementById('totalUnits').textContent = totalUnits.toFixed(1);
-                document.getElementById('costPerUnit').textContent = 'PKR' + (totalUnits > 0 ? (totalExpense / totalUnits).toFixed(2) : '0.00');
-            }
+function fillPaidOptions(sel, e) {
+  sel.replaceChildren(h("option", { value: "common", text: "Club / Common fund" }),
+    ...state.families.map(f => h("option", { value: f.id, text: famLabel(f) })));
+  sel.value = state.families.some(f => f.id === e.paidBy) ? e.paidBy : "common";
+  e.paidBy = sel.value;
+}
+function fillCustomPanel(e, ref) {
+  const p = ref.panel; p.replaceChildren();
+  p.hidden = e.method !== "custom";
+  if (p.hidden) return;
+  e.custom = e.custom || {};
+  const g = h("div", { class: "grid" });
+  state.families.forEach(f => {
+    const inp = h("input", { type: "text", inputmode: "decimal", placeholder: "0" });
+    inp.value = e.custom[f.id] ?? "";
+    setBad(inp, num(inp.value, true).bad);
+    inp.addEventListener("input", () => { e.custom[f.id] = inp.value; setBad(inp, num(inp.value, true).bad); update(); });
+    g.append(h("label", { class: "fld" }, h("span", { "data-fam": f.id, text: famLabel(f) }), inp));
+  });
+  ref.hint = h("div", { class: "hint", "data-hint": e.id });
+  p.append(g, ref.hint);
+}
+function refreshFamilyRefs() {
+  state.expenses.forEach(e => {
+    const ref = expRefs.get(e.id); if (!ref) return;
+    fillPaidOptions(ref.paidSel, e);
+    if (e.method === "custom") {
+      // keep focus if the user is typing in this panel; otherwise rebuild to add/remove family inputs
+      const have = ref.panel.querySelectorAll("[data-fam]").length;
+      if (have !== state.families.length) fillCustomPanel(e, ref);
+      else ref.panel.querySelectorAll("[data-fam]").forEach(sp => {
+        const f = state.families.find(x => x.id === sp.dataset.fam); if (f) sp.textContent = famLabel(f);
+      });
+    }
+  });
+}
+function expCard(e) {
+  const cat = h("select", {}, CATEGORIES.map(c => h("option", { value: c, text: c })));
+  const desc = h("input", { type: "text", placeholder: "Optional", autocomplete: "off" });
+  const amt = h("input", { type: "text", inputmode: "decimal", placeholder: "0.00" });
+  const paid = h("select");
+  const meth = h("select", {}, METHODS.map(([v, t]) => h("option", { value: v, text: t })));
+  cat.value = e.category; desc.value = e.desc; amt.value = e.amount; meth.value = e.method;
+  fillPaidOptions(paid, e);
+  cat.addEventListener("change", () => { e.category = cat.value; update(); });
+  paid.addEventListener("change", () => { e.paidBy = paid.value; update(); });
+  bind(desc, e, "desc"); bind(amt, e, "amount", true);
+  const panel = h("div", { class: "custom-panel", hidden: true });
+  const ref = { paidSel: paid, panel, hint: null };
+  expRefs.set(e.id, ref);
+  meth.addEventListener("change", () => { e.method = meth.value; fillCustomPanel(e, ref); update(); });
+  fillCustomPanel(e, ref);
+  const rm = h("button", { class: "danger no-print", type: "button", "aria-label": "Remove expense", text: "Remove",
+    onclick: () => { state.expenses = state.expenses.filter(x => x.id !== e.id); expRefs.delete(e.id); card.remove(); emptyExpMsg(); update(); } });
+  const card = h("div", { class: "row", "data-id": e.id },
+    h("div", { class: "row-grid exp-grid" },
+      field("Category", cat), field("Description", desc, "wide"), field("Amount", amt),
+      field("Paid by", paid), field("Split method", meth), rm), panel);
+  return card;
+}
+function emptyExpMsg() {
+  const box = $("#expenses"); const m = box.querySelector(".empty");
+  if (!state.expenses.length && !m) box.append(h("div", { class: "empty", text: "No expenses yet. Click “Add expense” to log the first one." }));
+  if (state.expenses.length && m) m.remove();
+}
+function renderExpenses() {
+  const box = $("#expenses"); box.replaceChildren(); expRefs.clear();
+  state.expenses.forEach(e => box.append(expCard(e)));
+  emptyExpMsg();
+}
+function addExpense() {
+  const e = newExpense();
+  state.expenses.push(e);
+  const box = $("#expenses"); box.querySelector(".empty")?.remove();
+  const c = expCard(e); box.append(c);
+  update(); c.querySelectorAll("input")[1].focus();
+}
 
-            function updateExpenseTotal(element) {
-                const row = element.closest('tr');
-                if (!row) return;
+/* ============================== RENDER: RESULTS ============================== */
+function balCell(c) {
+  if (c > 0) return h("td", {}, h("span", { class: "pill pos", text: "Is owed " + money(c) }));
+  if (c < 0) return h("td", {}, h("span", { class: "pill neg", text: "Owes " + money(-c) }));
+  return h("td", { class: "zero", text: "Settled" });
+}
+function stat(label, val, sub) {
+  return h("div", { class: "stat" }, h("div", { class: "lbl", text: label }), h("div", { class: "val", text: val }),
+    sub ? h("div", { class: "sub", text: sub }) : null);
+}
 
-                const inputs = row.querySelectorAll('input[type="number"]');
-                if (inputs.length < 2) return;
+function renderResults(r) {
+  const box = $("#results"); box.replaceChildren();
+  if (!r.n) { box.append(h("div", { class: "empty", text: "Add at least one family to see results." })); return; }
 
-                const qty = parseFloat(inputs[0].value) || 0;
-                const price = parseFloat(inputs[1].value) || 0;
-                const total = qty * price;
+  // 1. Summary cards
+  box.append(h("div", { class: "cards" },
+    stat("Total cost", money(r.totalC), state.expenses.length + " expense line(s)"),
+    stat("Total headcount", fmtNum(r.totalHead) + " adult-eq.", r.people + " actual people"),
+    stat("Cost per adult-equivalent", money(r.perAdultEq), "Total ÷ adult-equivalents"),
+    stat("Cost per person", money(r.perPerson), "Total ÷ actual people"),
+    stat("Per-person split rate", money(r.ppRate), "Rate for “Per Person” items")));
 
-                const totalSpan = row.querySelector('.expense-total');
-                if (totalSpan) totalSpan.textContent = total.toFixed(2);
+  // 2. Per-family table
+  const tb = h("tbody");
+  r.rows.forEach(x => tb.append(h("tr", {},
+    h("td", { text: x.name }), h("td", { text: fmtNum(x.head) }), h("td", { text: money(x.shareC) }),
+    h("td", { text: fmtNum(x.pct, 1) + "%" }), h("td", { text: money(x.paidC) }), balCell(x.balC))));
+  if (r.club.paidC > 0) tb.append(h("tr", {},
+    h("td", { text: "Club / Common fund" }), h("td", { text: "—" }), h("td", { text: "—" }), h("td", { text: "—" }),
+    h("td", { text: money(r.club.paidC) }), balCell(r.club.balC)));
+  const sumPaid = r.rows.reduce((s, x) => s + x.paidC, 0) + r.club.paidC;
+  box.append(h("h3", { text: "Per-family breakdown" }), h("div", { class: "table-wrap" },
+    h("table", {}, h("thead", {}, h("tr", {}, ["Family", "Members (adult-eq.)", "Share", "% of total", "Paid", "Balance"].map(t => h("th", { scope: "col", text: t })))),
+      tb, h("tfoot", {}, h("tr", {}, h("td", { text: "Total" }), h("td", { text: fmtNum(r.totalHead) }),
+        h("td", { text: money(r.sumShares) }), h("td", { text: r.totalC > 0 ? "100%" : "0%" }), h("td", { text: money(sumPaid) }), h("td", { text: "" }))))));
 
-                updateExpenseGrandTotal();
-            }
+  // 3. Settlement plan
+  box.append(h("h3", { text: "Settlement plan" }));
+  if (!r.transfers.length) box.append(h("div", { class: "empty", text: "Everyone is settled — no transfers needed." }));
+  else {
+    const ul = h("ul", { class: "plain" });
+    r.transfers.forEach(t => ul.append(h("li", {}, h("strong", { text: t.from }), " pays ", h("strong", { text: t.to }), " ", h("span", { class: "pos", text: money(t.amt) }))));
+    box.append(ul);
+  }
 
-            function updateExpenseGrandTotal() {
-                const totals = document.querySelectorAll('.expense-total');
-                let grandTotal = 0;
-                totals.forEach(el => {
-                    grandTotal += parseFloat(el.textContent) || 0;
-                });
+  // 4. Integrity check
+  const live = h("div", { "aria-live": "polite" });
+  if (r.integrityOK) live.append(h("div", { class: "banner ok", text: "✓ Integrity check passed: shares add up to the total cost and balances sum to zero." }));
+  else live.append(h("div", { class: "banner err", text: "⚠ Integrity check failed: shares total " + money(r.sumShares) + " vs total cost " + money(r.totalC) + "; balances sum to " + money(r.sumBal) + ". Check Custom splits that don’t add up to their amount." }));
+  if (r.noHead && r.ppC > 0) live.append(h("div", { class: "banner warn", text: "No headcount entered — “Per Person” items are being split equally per family." }));
+  box.append(live);
 
-                document.getElementById('expenseGrandTotal').textContent = grandTotal.toFixed(2);
-                document.getElementById('totalExpense').value = grandTotal.toFixed(2);
-                calculateAll();
-            }
+  // Bonus: category bar chart (pure CSS)
+  const cats = Object.entries(r.byCat).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+  if (cats.length) {
+    const max = cats[0][1], bars = h("div", { class: "bars" });
+    cats.forEach(([c, v]) => bars.append(h("div", { class: "bar-row" }, h("span", { text: c }),
+      h("div", { class: "bar-track", role: "img", "aria-label": c + " " + fmtNum(v / r.totalC * 100, 1) + " percent" },
+        h("div", { class: "bar-fill", style: "width:" + (v / max * 100) + "%" })),
+      h("span", { class: "bar-val", text: money(v) + " · " + fmtNum(v / r.totalC * 100, 0) + "%" }))));
+    box.append(h("h3", { text: "Expenses by category" }), bars);
+  }
+}
 
-            function addExpense(item = '', category = '', qty = 1, price = 0, paidBy = '') {
-                const tbody = document.getElementById('expenseBody');
-                const row = document.createElement('tr');
+/* Master update: called after every input */
+function update() {
+  const r = compute();
+  renderResults(r);
+  // per-expense custom-split hints
+  state.expenses.forEach(e => {
+    const ref = expRefs.get(e.id), info = r.customInfo && r.customInfo[e.id];
+    if (!ref || !ref.hint || !info) return;
+    const rem = info.amount - info.assigned;
+    ref.hint.className = "hint " + (rem === 0 ? "ok" : "err");
+    ref.hint.textContent = rem === 0 ? "✓ Fully assigned (" + money(info.amount) + ")"
+      : (rem > 0 ? "Unassigned: " + money(rem) : "Over-assigned by " + money(-rem)) + " — assigned " + money(info.assigned) + " of " + money(info.amount);
+  });
+  save();
+}
 
-                row.innerHTML = `
-    <td><input type="text" value="${item || 'New Item'}" style="width:100%"></td>
-    <td><input type="text" value="${category || 'Misc'}" style="width:100%"></td>
-    <td><input type="number" value="${qty}" min="0" style="width:100%" onchange="updateExpenseTotal(this)"></td>
-    <td><input type="number" value="${price}" min="0" style="width:100%" onchange="updateExpenseTotal(this)"></td>
-    <td><span class="expense-total">${(qty * price).toFixed(2)}</span></td>
-    <td><input type="text" value="${paidBy}" style="width:100%"></td>
-  `;
+/* ============================== EXPORT ============================== */
+function summaryText() {
+  const r = compute();
+  if (!r.n) return "No families.";
+  const L = [];
+  L.push(state.name + " — " + state.date, "Total cost: " + money(r.totalC) + " | Headcount: " + fmtNum(r.totalHead) + " adult-eq. (" + r.people + " people)",
+    "Per adult-equivalent: " + money(r.perAdultEq) + " | Per person: " + money(r.perPerson), "", "FAMILIES");
+  r.rows.forEach(x => L.push("- " + x.name + ": share " + money(x.shareC) + ", paid " + money(x.paidC) + ", " +
+    (x.balC > 0 ? "is owed " + money(x.balC) : x.balC < 0 ? "owes " + money(-x.balC) : "settled")));
+  if (r.club.paidC > 0) L.push("- Club / Common fund: paid " + money(r.club.paidC) + ", is owed " + money(r.club.balC));
+  L.push("", "SETTLEMENT");
+  if (!r.transfers.length) L.push("- Everyone is settled");
+  r.transfers.forEach(t => L.push("- " + t.from + " pays " + t.to + " " + money(t.amt)));
+  return L.join("\n");
+}
+function csvText() {
+  const r = compute(), q = v => '"' + String(v).replace(/"/g, '""') + '"', rows = [];
+  rows.push([q("Picnic"), q(state.name), q("Date"), q(state.date), q("Currency"), q(state.currency)].join(","));
+  rows.push("", "Families", ["Family", "Adults", "Children", "Child factor", "Adult-equivalent", "Share", "% of total", "Paid", "Balance (+owed / -owes)"].join(","));
+  if (r.n) {
+    r.rows.forEach((x, i) => { const f = state.families[i];
+      rows.push([q(x.name), num(f.adults).v, num(f.children).v, num(f.factor).v, fmtNum(x.head), (x.shareC / 100).toFixed(2), x.pct.toFixed(1), (x.paidC / 100).toFixed(2), (x.balC / 100).toFixed(2)].join(",")); });
+    if (r.club.paidC > 0) rows.push([q("Club / Common fund"), "", "", "", "", "", "", (r.club.paidC / 100).toFixed(2), (r.club.balC / 100).toFixed(2)].join(","));
+  }
+  rows.push("", "Expenses", ["Category", "Description", "Amount", "Paid by", "Split method"].join(","));
+  state.expenses.forEach(e => {
+    const f = state.families.find(x => x.id === e.paidBy);
+    rows.push([q(e.category), q(e.desc), (toCents(num(e.amount).v) / 100).toFixed(2), q(f ? famLabel(f) : "Club / Common fund"), q(METHODS.find(m => m[0] === e.method)[1])].join(","));
+  });
+  rows.push("", "Settlement", ["From", "To", "Amount"].join(","));
+  (r.transfers || []).forEach(t => rows.push([q(t.from), q(t.to), (t.amt / 100).toFixed(2)].join(",")));
+  return rows.join("\r\n");
+}
+function copySummary() {
+  const text = summaryText();
+  const fallback = () => { const ta = h("textarea", { class: "sr" }); ta.value = text; document.body.append(ta); ta.select();
+    try { document.execCommand("copy"); toast("Summary copied"); } catch (e) { toast("Copy failed"); } ta.remove(); };
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(() => toast("Summary copied"), fallback);
+  else fallback();
+}
+function downloadCsv() {
+  const blob = new Blob(["\ufeff" + csvText()], { type: "text/csv;charset=utf-8" });
+  const a = h("a", { href: URL.createObjectURL(blob), download: (state.name || "picnic").replace(/[^\w\-]+/g, "_") + ".csv" });
+  document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
 
-                tbody.appendChild(row);
-                updateExpenseGrandTotal();
-            }
+/* ============================== INIT ============================== */
+function renderAll() {
+  $("#picnicName").value = state.name; $("#picnicDate").value = state.date; $("#currency").value = state.currency;
+  renderFamilies(); renderExpenses(); update();
+}
+$("#currency").append(...CURRENCIES.map(([c, t]) => h("option", { value: c, text: t })));
+$("#picnicName").addEventListener("input", e => { state.name = e.target.value; save(); });
+$("#picnicDate").addEventListener("input", e => { state.date = e.target.value; save(); });
+$("#currency").addEventListener("change", e => { state.currency = e.target.value; update(); });
+$("#addFam").addEventListener("click", addFamily);
+$("#addExp").addEventListener("click", addExpense);
+$("#btnSample").addEventListener("click", () => { state = sampleState(); renderAll(); toast("Sample data loaded"); });
+$("#btnReset").addEventListener("click", () => { if (confirm("Clear everything and start a new picnic?")) { state = blankState(); renderAll(); } });
+$("#btnCopy").addEventListener("click", copySummary);
+$("#btnCsv").addEventListener("click", downloadCsv);
+$("#btnPrint").addEventListener("click", () => window.print());
+if (!CURRENCIES.some(c => c[0] === state.currency)) state.currency = "PKR";
+/* ============================== PWA ============================== */
+/* Registers the service worker (offline + installability) and surfaces an
+   in-app Install button whenever the browser offers the install prompt. */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(err => console.warn("SW registration failed:", err));
+  });
+}
+let installEvt = null;
+const btnInstall = $("#btnInstall");
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault();           // stash it and show our own Install button
+  installEvt = e;
+  btnInstall.hidden = false;
+});
+btnInstall.addEventListener("click", async () => {
+  if (!installEvt) return;
+  installEvt.prompt();
+  const { outcome } = await installEvt.userChoice;
+  if (outcome === "accepted") btnInstall.hidden = true;
+  installEvt = null;
+});
+window.addEventListener("appinstalled", () => { btnInstall.hidden = true; });
 
-                // Fix: When total expense input changes manually, update everything
-                document.addEventListener('DOMContentLoaded', function() {
-                    const totalExpenseInput = document.getElementById('totalExpense');
-                    if (totalExpenseInput) {
-                        totalExpenseInput.addEventListener('change', function() {
-                            calculateAll();
-                        });
-                    }
-                });
-    </script>
-
+renderAll();
+</script>
 </body>
 </html>
